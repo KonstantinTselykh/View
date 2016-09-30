@@ -6,8 +6,11 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -31,6 +34,8 @@ public class CustomView extends View {
     private Vertex mRightTopVtx;
     private Vertex mCenterVtx;
     private int paintAlpha;
+
+    private int mBitmapPicture;
 
     private Paint mCentralPaint;
 
@@ -241,14 +246,15 @@ public class CustomView extends View {
 
     }
 
+    //add a chance to user to choose a picture
     @Override
     protected void onDraw(Canvas canvas){
         super.onDraw(canvas);
-//        Log.d(TAG, "onDraw: vtx " + mLeftBottomVtx);
         mCentralPaint.setAlpha(paintAlpha);
         Log.d(TAG, "onDraw: paint.paintAlpha: " + mCentralPaint.getAlpha());
         drawRect(canvas);
         drawLines(canvas);
+        drawBitmap(canvas);
         postInvalidate();
     }
 
@@ -283,7 +289,24 @@ public class CustomView extends View {
                 mCentralPaint);
     }
 
+    private void drawBitmap(Canvas canvas){
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_android_black_24dp); //getBitmapDrawable());
+        mFigureSize = bitmap.getWidth();
 
+        canvas.drawBitmap(bitmap, mLeftTopVtx.left, mLeftTopVtx.top, mFigurePaint);
+        canvas.drawBitmap(bitmap, mLeftBottomVtx.left, mLeftBottomVtx.top, mFigurePaint);
+        canvas.drawBitmap(bitmap, mRightTopVtx.left, mRightTopVtx.top, mFigurePaint);
+        canvas.drawBitmap(bitmap, mRightBottomVtx.left, mRightBottomVtx.top, mFigurePaint);
+    }
+
+    public void setBitmapDrawable(int res){
+        mBitmapPicture = res;
+
+    }
+
+    private int getBitmapDrawable(){
+        return mBitmapPicture;
+    }
 
 
     private void drawLines(Canvas canvas){

@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 customView.setFigureColor(Color.BLACK);
+                customView.setBitmapDrawable(R.drawable.ic_cloud_circle_black_24dp);
             }
         });
 
