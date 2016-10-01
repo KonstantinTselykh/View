@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
@@ -13,19 +14,18 @@
 
     <com.example.kostya.myapplication.CustomView
         android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_height="80dp"
         android:id="@+id/custom_view1"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        custom:animationSpeed = "200"
+        custom:lineColor = "@color/colorAccent"
+        />
 
     <com.example.kostya.myapplication.CustomView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        custom:figureSize="100dp"
         android:id="@+id/customView" />
-
-    <com.example.kostya.myapplication.CustomView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"/>
 
 </LinearLayout>

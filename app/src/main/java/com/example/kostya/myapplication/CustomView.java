@@ -6,13 +6,16 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AnimationSet;
@@ -27,54 +30,68 @@ import java.util.Random;
 
 public class CustomView extends View {
     private static final String TAG = CustomView.class.getSimpleName();
-    private Paint mFigurePaint;
+
+    //vertex && vertex settings
     private Vertex mLeftTopVtx;
     private Vertex mRightBottomVtx;
     private Vertex mLeftBottomVtx;
     private Vertex mRightTopVtx;
     private Vertex mCenterVtx;
-    private int paintAlpha;
+    private Paint mLineColor;
+    private Paint mFigureColor;
+    private int figureSize;
+    private int width, height;
 
-    private int mBitmapPicture;
-
-    private Paint mCentralPaint;
-
-    private int mFigureSize = 20;
-    private int mWidth, mHeight;
+    //animation && animation settings
     private AnimatorSet mAnimatorSet;
-    private int mAnimationCount;
-    
-    private int mRectSpeed = 300;
-    private int mLineSpeed = 200;
-
+    private int animationCount;
+    private int animationSpeed;
+    private int paintAlpha;
+    private int bitmapPicture;
     private ObjectAnimator mWrappedAnimation;
     private ObjectAnimator mUnwrappedAnimation;
 
     public CustomView(Context context, AttributeSet attrs){
         super(context,attrs);
-        init();
-        setWillNotDraw(false);
+        TypedArray array = context.getTheme().obtainStyledAttributes(
+                attrs,
+                R.styleable.CustomView,
+                0, 0
+        );
+
+        int color;
+        try{
+            figureSize = (int)array.getDimension(R.styleable.CustomView_figureSize,
+                    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20,
+                    getResources().getDisplayMetrics()));
+            color = array.getColor(R.styleable.CustomView_lineColor,
+                    Color.BLUE);
+            animationSpeed = array.getInt(R.styleable.CustomView_animationSpeed,
+                    300);
+        } finally {
+            array.recycle();
+        }
+
+        init(color);
     }
 
-    private void init(){
-        mFigurePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mFigurePaint.setStyle(Paint.Style.FILL);
-        mFigurePaint.setColor(getResources().getColor(R.color.colorAccent));
+    private void init(int color){
+        mLineColor = new Paint();
+        mLineColor.setStyle(Paint.Style.FILL);
+        mLineColor.setColor(color);
 
-        mCentralPaint = new Paint();
-        mCentralPaint.setStyle(Paint.Style.FILL);
-        mCentralPaint.setColor(getResources().getColor(R.color.colorAccent));
-    }
-    
-    public void setFigureColor(int color){
-        mFigurePaint.setColor(color);
+        mFigureColor = new Paint();
+        mFigureColor.setStyle(Paint.Style.FILL);
+        mFigureColor.setColor(color);
     }
 
     @Override
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec){
 
-        int desiredWidth = mRectSpeed;
-        int desiredHeight = mRectSpeed;
+        int desiredWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 250,
+                getResources().getDisplayMetrics());
+        int desiredHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 250,
+                getResources().getDisplayMetrics());
 
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
@@ -85,56 +102,60 @@ public class CustomView extends View {
         if(widthMode == MeasureSpec.EXACTLY){
             //MUST be this size
             if(widthSize > desiredWidth)
-                mWidth = desiredWidth;
+                width = desiredWidth;
             else {
-                mWidth = widthSize;
-                mFigureSize = 10;
+                width = widthSize;
+                figureSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10,
+                        getResources().getDisplayMetrics());;
             }
         } else if(widthMode == MeasureSpec.AT_MOST){
             //Cant be bigger than
-            mWidth = desiredWidth;
-            mWidth = Math.min(desiredWidth,widthSize);
+            width = desiredWidth;
+            width = Math.min(desiredWidth,widthSize);
         } else{
             //be  whatever I want
-            mWidth = desiredWidth;
+            width = desiredWidth;
         }
 
         if(heightMode == MeasureSpec.EXACTLY){
             //MUST be this size
             if(heightSize > desiredHeight)
-                mHeight = desiredHeight;
+                height = desiredHeight;
             else {
-                mHeight = heightSize;
-                mFigureSize = 10;
+                height = heightSize;
+                figureSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10,
+                        getResources().getDisplayMetrics());;
             }
         } else if(heightMode == MeasureSpec.AT_MOST){
             //Cant be bigger than
-            mHeight = desiredHeight;
-            mHeight = Math.min(desiredHeight,heightSize);
+            height = desiredHeight;
+            height = Math.min(desiredHeight,heightSize);
         } else{
             //be  whatever I want
-            mHeight = desiredHeight;
+            height = desiredHeight;
         }
 
-        setMeasuredDimension(mWidth,mHeight);
+        setMeasuredDimension(width,height);
 
-        mWidth = getWidth() - mFigureSize;
-        mHeight = getHeight() - mFigureSize;
+        //width = getWidth() - figureSize;
+        //height = getHeight() - figureSize;
+        width = width - figureSize;
+        height = height - figureSize;
 
-        if(mWidth!= mHeight && mWidth < mHeight)
-            mHeight = mWidth;
+        if(width!= height && width < height)
+            height = width;
         else
-            mWidth = mHeight;
+            width = height;
 
         initVertex();
     }
 
     private void initVertex() {
-        mLeftTopVtx = new Vertex(mFigureSize, mFigureSize);
-        mRightBottomVtx = new Vertex(mWidth, mHeight);
-        mRightTopVtx = new Vertex(mWidth, mFigureSize);
-        mLeftBottomVtx = new Vertex(mFigureSize, mHeight);
-        mCenterVtx = new Vertex(mWidth/2, mHeight/2);
+        mLeftTopVtx = new Vertex(figureSize, figureSize);
+        mRightBottomVtx = new Vertex(width, height);
+        mRightTopVtx = new Vertex(width, figureSize);
+        mLeftBottomVtx = new Vertex(figureSize, height);
+        mCenterVtx = new Vertex(width/2, height/2);
 
         startAnimations();
     }
@@ -177,16 +198,16 @@ public class CustomView extends View {
         mWrappedAnimation.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-                if(mAnimationCount == 0)
+                if(animationCount == 0)
                     mUnwrappedAnimation.start();
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                mAnimationCount++;
+                animationCount++;
                 mAnimatorSet.start();
-                if(mAnimationCount == 2){
-                    mAnimationCount = 0;
+                if(animationCount == 2){
+                    animationCount = 0;
                     startAnimations();
                 }
             }
@@ -206,33 +227,33 @@ public class CustomView extends View {
 
     private void setAnimator(){
 
-        ObjectAnimator leftTopVtxAnimation = ObjectAnimator.ofInt(mLeftTopVtx,"top",0,mHeight/2);
-        leftTopVtxAnimation.setDuration(mRectSpeed);
+        //first animation
+        ObjectAnimator leftTopVtxAnimation = ObjectAnimator.ofInt(mLeftTopVtx,"top",0,height/2);
+        leftTopVtxAnimation.setDuration(animationSpeed);
 
-        ObjectAnimator leftBottomVtxAnimation = ObjectAnimator.ofInt(mLeftBottomVtx,"left",0,mHeight/2);
-        leftBottomVtxAnimation.setDuration(mRectSpeed);
+        ObjectAnimator leftBottomVtxAnimation = ObjectAnimator.ofInt(mLeftBottomVtx,"left",0,height/2);
+        leftBottomVtxAnimation.setDuration(animationSpeed);
 
-        ObjectAnimator rightBottomVtxAnimation = ObjectAnimator.ofInt(mRightBottomVtx,"top",mWidth,mHeight/2 );
-        rightBottomVtxAnimation.setDuration(mRectSpeed);
+        ObjectAnimator rightBottomVtxAnimation = ObjectAnimator.ofInt(mRightBottomVtx,"top",width,height/2 );
+        rightBottomVtxAnimation.setDuration(animationSpeed);
 
-        ObjectAnimator rightTopVtxAnimation = ObjectAnimator.ofInt(mRightTopVtx,"left",mWidth,mHeight/2);
-        rightTopVtxAnimation.setDuration(mRectSpeed);
+        ObjectAnimator rightTopVtxAnimation = ObjectAnimator.ofInt(mRightTopVtx,"left",width,height/2);
+        rightTopVtxAnimation.setDuration(animationSpeed);
 
         //second animation
-        ObjectAnimator leftTopToCenter = ObjectAnimator.ofInt(mLeftTopVtx,"left",0,mHeight/2);
-        leftTopToCenter.setDuration(mLineSpeed);
+        ObjectAnimator leftTopToCenter = ObjectAnimator.ofInt(mLeftTopVtx,"left",0,height/2);
+        leftTopToCenter.setDuration(animationSpeed);
 
-        ObjectAnimator leftBottomToCenter = ObjectAnimator.ofInt(mLeftBottomVtx, "top", mWidth , mHeight/2);
-        leftBottomToCenter.setDuration(mLineSpeed);
+        ObjectAnimator leftBottomToCenter = ObjectAnimator.ofInt(mLeftBottomVtx, "top", width , height/2);
+        leftBottomToCenter.setDuration(animationSpeed);
 
-        ObjectAnimator rightBottomToCenter = ObjectAnimator.ofInt(mRightBottomVtx,"left",mWidth, mHeight/2);
-        rightBottomToCenter.setDuration(mLineSpeed);
+        ObjectAnimator rightBottomToCenter = ObjectAnimator.ofInt(mRightBottomVtx,"left",width, height/2);
+        rightBottomToCenter.setDuration(animationSpeed);
 
-        ObjectAnimator rightTopToCenter = ObjectAnimator.ofInt(mRightTopVtx,"top",0,mHeight/2);
-        rightTopToCenter.setDuration(mLineSpeed);
+        ObjectAnimator rightTopToCenter = ObjectAnimator.ofInt(mRightTopVtx,"top",0,height/2);
+        rightTopToCenter.setDuration(animationSpeed);
 
         mAnimatorSet = new AnimatorSet();
-
         //animation play
         mAnimatorSet.play(leftTopVtxAnimation).before(leftBottomVtxAnimation);
         mAnimatorSet.play(leftBottomVtxAnimation).with(rightBottomVtxAnimation);
@@ -250,106 +271,77 @@ public class CustomView extends View {
     @Override
     protected void onDraw(Canvas canvas){
         super.onDraw(canvas);
-        mCentralPaint.setAlpha(paintAlpha);
-        Log.d(TAG, "onDraw: paint.paintAlpha: " + mCentralPaint.getAlpha());
-        drawRect(canvas);
-        drawLines(canvas);
+        mFigureColor.setAlpha(paintAlpha);
+        Log.d(TAG, "onDraw: paint.paintAlpha: " + mFigureColor.getAlpha());
         drawBitmap(canvas);
+        drawLines(canvas);
         postInvalidate();
     }
 
-    public int getPaintAlpha() {
-        return paintAlpha;
-    }
-
-    public void setPaintAlpha(int paintAlpha) {
-        this.paintAlpha = paintAlpha;
-    }
-
-    private void drawRect(Canvas canvas){
-        //rectangles
-        canvas.drawRect(mLeftTopVtx.left, mLeftTopVtx.top,
-                mLeftTopVtx.left + mFigureSize, mLeftTopVtx.top + mFigureSize,
-                mFigurePaint); //left top rect
-
-        canvas.drawRect(mRightBottomVtx.left,mRightBottomVtx.top,
-                mRightBottomVtx.left + mFigureSize, mRightBottomVtx.top + mFigureSize,
-                mFigurePaint); //right bottom rect
-
-        canvas.drawRect(mLeftBottomVtx.left,mLeftBottomVtx.top,
-                mLeftBottomVtx.left + mFigureSize, mLeftBottomVtx.top + mFigureSize,
-                mFigurePaint); //left bottom rect
-
-        canvas.drawRect(mRightTopVtx.left,mRightTopVtx.top,
-                mRightTopVtx.left + mFigureSize, mRightTopVtx.top + mFigureSize,
-                mFigurePaint); //right top rect
-
-        canvas.drawRect(mCenterVtx.left,mCenterVtx.top,
-                mCenterVtx.left + mFigureSize, mCenterVtx.top + mFigureSize,
-                mCentralPaint);
-    }
-
     private void drawBitmap(Canvas canvas){
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_android_black_24dp); //getBitmapDrawable());
-        mFigureSize = bitmap.getWidth();
+        int image = getBitmapDrawable();
 
-        canvas.drawBitmap(bitmap, mLeftTopVtx.left, mLeftTopVtx.top, mFigurePaint);
-        canvas.drawBitmap(bitmap, mLeftBottomVtx.left, mLeftBottomVtx.top, mFigurePaint);
-        canvas.drawBitmap(bitmap, mRightTopVtx.left, mRightTopVtx.top, mFigurePaint);
-        canvas.drawBitmap(bitmap, mRightBottomVtx.left, mRightBottomVtx.top, mFigurePaint);
+        if(image == 0)
+            image = R.drawable.ic_android_black_24dp;
+
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),image);
+
+        int size = bitmap.getWidth();
+        if(size > figureSize || size == 0){
+            size = figureSize;
+             bitmap = Bitmap.createScaledBitmap(bitmap,figureSize, figureSize, true);
+        }
+        figureSize = size;
+        Bitmap centerBitmap = Bitmap.createScaledBitmap(bitmap,figureSize * 2, figureSize * 2, true);
+
+        canvas.drawBitmap(bitmap, mLeftTopVtx.left, mLeftTopVtx.top, mLineColor);
+        canvas.drawBitmap(bitmap, mLeftBottomVtx.left, mLeftBottomVtx.top, mLineColor);
+        canvas.drawBitmap(bitmap, mRightTopVtx.left, mRightTopVtx.top, mLineColor);
+        canvas.drawBitmap(bitmap, mRightBottomVtx.left, mRightBottomVtx.top, mLineColor);
+        canvas.drawBitmap(centerBitmap, mCenterVtx.left - figureSize/2, mCenterVtx.top - figureSize/2, mFigureColor);
     }
-
-    public void setBitmapDrawable(int res){
-        mBitmapPicture = res;
-
-    }
-
-    private int getBitmapDrawable(){
-        return mBitmapPicture;
-    }
-
 
     private void drawLines(Canvas canvas){
         //left top - right top
         canvas.drawLine(
-                mLeftTopVtx.left + mFigureSize/2, mLeftTopVtx.top + mFigureSize/2, //from
-                mRightTopVtx.left + mFigureSize/2, mRightTopVtx.top + mFigureSize/2,   //to
-                mFigurePaint    //color
+                mLeftTopVtx.left + figureSize/2, mLeftTopVtx.top + figureSize/2, //from
+                mRightTopVtx.left + figureSize/2, mRightTopVtx.top + figureSize/2,   //to
+                mLineColor    //color
         );
 
         //left top - left bottom
         canvas.drawLine(
-                mLeftTopVtx.left + mFigureSize/2, mLeftTopVtx.top + mFigureSize/2,
-                mLeftBottomVtx.left +mFigureSize/2, mLeftBottomVtx.top + mFigureSize/2,
-                mFigurePaint
+                mLeftTopVtx.left + figureSize/2, mLeftTopVtx.top + figureSize/2,
+                mLeftBottomVtx.left +figureSize/2, mLeftBottomVtx.top + figureSize/2,
+                mLineColor
         );
 
         //left top - right bottom (diagonal)
         canvas.drawLine(
-                mLeftTopVtx.left + mFigureSize/2, mLeftTopVtx.top + mFigureSize/2,
-                mRightBottomVtx.left + mFigureSize/2, mRightBottomVtx.top + mFigureSize/2,
-                mFigurePaint
+                mLeftTopVtx.left + figureSize/2, mLeftTopVtx.top + figureSize/2,
+                mRightBottomVtx.left + figureSize/2, mRightBottomVtx.top + figureSize/2,
+                mLineColor
         );
 
         //right top - left bottom
         canvas.drawLine(
-                mRightTopVtx.left + mFigureSize/2, mRightTopVtx.top + mFigureSize/2,
-                mLeftBottomVtx.left + mFigureSize/2, mLeftBottomVtx.top + mFigureSize/2,
-                mFigurePaint
+                mRightTopVtx.left + figureSize/2, mRightTopVtx.top + figureSize/2,
+                mLeftBottomVtx.left + figureSize/2, mLeftBottomVtx.top + figureSize/2,
+                mLineColor
         );
 
         //right bottom - left bottom
         canvas.drawLine(
-                mLeftBottomVtx.left +mFigureSize/2, mLeftBottomVtx.top + mFigureSize/2,
-                mRightBottomVtx.left + mFigureSize/2, mRightBottomVtx.top + mFigureSize/2,
-                mFigurePaint
+                mLeftBottomVtx.left +figureSize/2, mLeftBottomVtx.top + figureSize/2,
+                mRightBottomVtx.left + figureSize/2, mRightBottomVtx.top + figureSize/2,
+                mLineColor
         );
 
         //right top - right bottom
         canvas.drawLine(
-                mRightTopVtx.left + mFigureSize/2, mRightTopVtx.top + mFigureSize/2,
-                mRightBottomVtx.left + mFigureSize/2, mRightBottomVtx.top + mFigureSize/2,
-                mFigurePaint
+                mRightTopVtx.left + figureSize/2, mRightTopVtx.top + figureSize/2,
+                mRightBottomVtx.left + figureSize/2, mRightBottomVtx.top + figureSize/2,
+                mLineColor
         );
     }
 
@@ -388,6 +380,7 @@ public class CustomView extends View {
         }
     }
 
+    //reverse animation
     private class ReverseInterpolator implements Interpolator {
         @Override
         public float getInterpolation(float paramFloat){
@@ -395,10 +388,35 @@ public class CustomView extends View {
         }
     }
 
+    //sets visibility of central figure
+    public int getPaintAlpha() {
+        return paintAlpha;
+    }
+
+    public void setPaintAlpha(int paintAlpha) {
+        this.paintAlpha = paintAlpha;
+    }
+
+    //user interactions
+    public void setFigureColor(int color){
+        mLineColor.setColor(color);
+    }
+
+    public void setCentralFigurePaint(int color){
+        mFigureColor.setColor(color);
+    }
+
     private void changeAnimationSpeed(){
         Random randomInt = new Random();
-        mRectSpeed = randomInt.nextInt(700);
-        mLineSpeed = randomInt.nextInt(300);
+        animationSpeed = randomInt.nextInt(700);
+    }
+
+    public void setBitmapDrawable(int res){
+        bitmapPicture = res;
+    }
+
+    private int getBitmapDrawable(){
+        return bitmapPicture;
     }
 
     @Override

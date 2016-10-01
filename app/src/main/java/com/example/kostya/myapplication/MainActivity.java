@@ -13,12 +13,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         final CustomView customView = (CustomView)findViewById(R.id.custom_view1);
+        customView.setBitmapDrawable(R.drawable.ic_cloud_circle_black_24dp);
         customView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 customView.setFigureColor(Color.BLACK);
-                customView.setBitmapDrawable(R.drawable.ic_cloud_circle_black_24dp);
+                customView.setCentralFigurePaint(Color.GREEN);
             }
         });
 
