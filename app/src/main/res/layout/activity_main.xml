@@ -25,7 +25,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        custom:figureSize="100dp"
+        custom:figureDrawable="@drawable/ic_android_black_24dp"
+        custom:figureSize="20dp"
         android:id="@+id/customView" />
 
 </LinearLayout>

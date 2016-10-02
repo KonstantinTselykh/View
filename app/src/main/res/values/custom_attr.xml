@@ -4,5 +4,6 @@
         <attr name="figureSize" format= "dimension"/>
         <attr name="lineColor" format= "color" />
         <attr name="animationSpeed" format="integer"/>
+        <attr name="figureDrawable" format="reference"/>
     </declare-styleable>
 </resources>
