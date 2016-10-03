@@ -19,8 +19,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 customView.setLineColor(Color.GREEN);
+                customView.changeBitmapColor(Color.GREEN);
             }
         });
+
+
 
     }
 }

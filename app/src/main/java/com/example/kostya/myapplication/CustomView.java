@@ -9,7 +9,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -41,6 +46,8 @@ public class CustomView extends View {
     private int bitmapPicture;
     private ObjectAnimator mWrappedBlink;
     private ObjectAnimator mUnwrappedBlink;
+    private Bitmap mBitmap;
+    ColorFilter colorFilter;
 
     public CustomView(Context context, AttributeSet attrs){
         super(context,attrs);
@@ -270,25 +277,33 @@ public class CustomView extends View {
         postInvalidate();
     }
 
+    public void changeBitmapColor(int color){
+        colorFilter = new LightingColorFilter( color, color );
+        mLineColor.setColorFilter(colorFilter);
+    }
+
     private void drawBitmap(Canvas canvas){
         int image = getBitmapDrawable(); //get user image
         if(image == 0)
-            image = R.drawable.ic_android_black_24dp;
+            image = R.drawable.ic_pets_black_36dp;
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),image);
-
-        int size = bitmap.getWidth();
+        mBitmap = BitmapFactory.decodeResource(getResources(),image);
+        //changeBitmapColor();
+        int size = mBitmap.getWidth();
         if(size > figureSize || size == 0){
             size = figureSize;
-            bitmap = Bitmap.createScaledBitmap(bitmap, figureSize, figureSize, true);
+            mBitmap = Bitmap.createScaledBitmap(mBitmap, figureSize, figureSize, true);
         }
         figureSize = size;
-        Bitmap centerBitmap = Bitmap.createScaledBitmap(bitmap, figureSize * 2, figureSize * 2, true);
+        Bitmap centerBitmap = Bitmap.createScaledBitmap(mBitmap, figureSize * 2, figureSize * 2, true);
 
-        canvas.drawBitmap(bitmap, mLeftTopVtx.left, mLeftTopVtx.top, mLineColor);
-        canvas.drawBitmap(bitmap, mLeftBottomVtx.left, mLeftBottomVtx.top, mLineColor);
-        canvas.drawBitmap(bitmap, mRightTopVtx.left, mRightTopVtx.top, mLineColor);
-        canvas.drawBitmap(bitmap, mRightBottomVtx.left, mRightBottomVtx.top, mLineColor);
+        //mBitmap.eraseColor(Color.YELLOW);
+
+
+        canvas.drawBitmap(mBitmap, mLeftTopVtx.left,mLeftTopVtx.top,mLineColor);
+        canvas.drawBitmap(mBitmap, mLeftBottomVtx.left, mLeftBottomVtx.top, mLineColor);
+        canvas.drawBitmap(mBitmap, mRightTopVtx.left, mRightTopVtx.top, mLineColor);
+        canvas.drawBitmap(mBitmap, mRightBottomVtx.left, mRightBottomVtx.top, mLineColor);
         canvas.drawBitmap(centerBitmap, mCenterVtx.left - figureSize/2, mCenterVtx.top - figureSize/2, mCentralFigureColor);
     }
 
