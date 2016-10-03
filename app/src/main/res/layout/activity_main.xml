@@ -17,7 +17,7 @@
         android:layout_height="80dp"
         android:id="@+id/custom_view1"
         android:layout_gravity="center"
-        custom:animationSpeed = "200"
+        custom:animationSpeed = "450"
         custom:lineColor = "@color/colorAccent"
         />
 
@@ -26,7 +26,13 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         custom:figureDrawable="@drawable/ic_android_black_24dp"
-        custom:figureSize="20dp"
+        custom:figureSize="10dp"
         android:id="@+id/customView" />
+
+    <com.example.kostya.myapplication.CustomView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        custom:lineWidth="10"
+        android:layout_gravity="center" />
 
 </LinearLayout>

@@ -22,5 +22,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        customView.setCustomEventListener(new CustomView.OnCustomEventListener() {
+            @Override
+            public void onCollapsed() {
+                Log.i("Tag","Collapsed");
+            }
+        });
+
     }
 }

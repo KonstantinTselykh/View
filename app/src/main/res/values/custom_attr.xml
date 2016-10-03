@@ -5,5 +5,6 @@
         <attr name="lineColor" format= "color" />
         <attr name="animationSpeed" format="integer"/>
         <attr name="figureDrawable" format="reference"/>
+        <attr name="lineWidth" format="integer"/>
     </declare-styleable>
 </resources>
