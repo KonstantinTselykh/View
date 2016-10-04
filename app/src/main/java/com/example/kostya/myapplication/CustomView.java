@@ -54,11 +54,9 @@ public class CustomView extends View {
     private int mAnimationSpeedInMS;
     private int mPaintAlpha;
     private int mBitmapPicture;
-    private ObjectAnimator mWrappedBlink;
     private ObjectAnimator mUnwrappedBlink;
     private Bitmap mBitmap;
     private Bitmap mCenterBitmap;
-    private AnimatorSet mLeftTop;
 
     public CustomView(Context context, AttributeSet attrs){
         super(context,attrs);
@@ -265,76 +263,10 @@ public class CustomView extends View {
     }
 
     private void startAnimations(){
-        setAnimator();
-        //mAnimatorSet.start();
-        //mAnimatorSet.setInterpolator(new ReverseInterpolator());
-
-        mWrappedBlink = ObjectAnimator.ofInt(CustomView.this, "mPaintAlpha", 0 ,255);
-        mWrappedBlink.setDuration(500);
-        mWrappedBlink.setRepeatCount(2);
 
         mUnwrappedBlink = ObjectAnimator.ofFloat(CustomView.this, "alpha", 0f, 6f);
         mUnwrappedBlink.setDuration(500);
         mUnwrappedBlink.setRepeatCount(2);
-
-        mAnimatorSet.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mPaintAlpha = 0;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mWrappedBlink.start();
-                //startReverseAnimation();
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-
-        mWrappedBlink.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                if(mAnimationCount == 0) {
-                    mUnwrappedBlink.start();
-                }
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mAnimationCount++;
-                startReverseAnimation();
-                if(mAnimationCount == 2){
-                    if(mListener!= null)
-                        mListener.onCollapsed();
-                    mAnimationCount = 0;
-                    startAnimations();
-                }
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-
-    }
-
-    private void setAnimator(){
 
         ObjectAnimator leftTopVtxAnimation = ObjectAnimator.ofInt(mLeftTopVtx,"top",0,mHeight/2);
         leftTopVtxAnimation.setDuration(mAnimationSpeedInMS);
@@ -344,11 +276,9 @@ public class CustomView extends View {
 
         ObjectAnimator rightBottomVtxAnimation = ObjectAnimator.ofInt(mRightBottomVtx,"top",mWidth,mHeight/2 );
         rightBottomVtxAnimation.setDuration(mAnimationSpeedInMS);
-        rightBottomVtxAnimation.setStartDelay(mAnimationSpeedInMS - mAnimationSpeedInMS/2);
 
         ObjectAnimator rightTopVtxAnimation = ObjectAnimator.ofInt(mRightTopVtx,"left",mWidth,mHeight/2);
         rightTopVtxAnimation.setDuration(mAnimationSpeedInMS);
-        rightTopVtxAnimation.setStartDelay(mAnimationSpeedInMS);
 
         //second animation
         ObjectAnimator leftTopToCenter = ObjectAnimator.ofInt(mLeftTopVtx,"left",0,mHeight/2);
@@ -357,7 +287,7 @@ public class CustomView extends View {
 
         ObjectAnimator leftBottomToCenter = ObjectAnimator.ofInt(mLeftBottomVtx, "top", mWidth , mHeight/2);
         leftBottomToCenter.setDuration(mAnimationSpeedInMS);
-        leftBottomToCenter.setStartDelay(mAnimationSpeedInMS);
+        leftBottomToCenter.setStartDelay(mAnimationSpeedInMS - mAnimationSpeedInMS / 4);
 
         ObjectAnimator rightBottomToCenter = ObjectAnimator.ofInt(mRightBottomVtx,"left",mWidth, mHeight/2);
         rightBottomToCenter.setDuration(mAnimationSpeedInMS);
@@ -377,7 +307,7 @@ public class CustomView extends View {
         ObjectAnimator rightTopToLeftBottomX = ObjectAnimator.ofInt(mRightTopVtx, "left", mHeight / 2, 0);
         ObjectAnimator rightTopToLeftBottomY = ObjectAnimator.ofInt(mRightTopVtx, "top", mHeight / 2, mWidth);
 
-        ObjectAnimator rightBottomToLeftTopX = ObjectAnimator.ofInt(mRightBottomVtx, "left", mWidth / 2, 0 );
+        ObjectAnimator rightBottomToLeftTopX = ObjectAnimator.ofInt(mRightBottomVtx, "left", mWidth / 2, 0);
         ObjectAnimator rightBottomToLeftTopY = ObjectAnimator.ofInt(mRightBottomVtx, "top",  mWidth / 2, 0);
 
         AnimatorSet leftTopAnimatorSet = new AnimatorSet();
@@ -387,7 +317,7 @@ public class CustomView extends View {
 
         AnimatorSet leftBottomAnimatorSet = new AnimatorSet();
         leftBottomAnimatorSet.play(leftBottomVtxAnimation);
-        leftBottomAnimatorSet.play(leftBottomToRightTopX).with(leftBottomToRightTopY);//.after(leftBottomToCenter);
+        leftBottomAnimatorSet.play(leftBottomToRightTopX).with(leftBottomToRightTopY).after(leftBottomToCenter);
         leftBottomAnimatorSet.setDuration(mAnimationSpeedInMS);
         leftBottomAnimatorSet.setStartDelay(mAnimationSpeedInMS);
 
@@ -398,7 +328,7 @@ public class CustomView extends View {
         rightBottomAnimatorSet.setStartDelay(mAnimationSpeedInMS  * 2);
 
         AnimatorSet rightTopAnimatorSet = new AnimatorSet();
-        rightTopAnimatorSet.play(rightTopVtxAnimation);//.before(rightTopToCenter);
+        rightTopAnimatorSet.play(rightTopVtxAnimation);
         rightTopAnimatorSet.play(rightTopToLeftBottomX).with(rightTopToLeftBottomY).after(rightTopToCenter);
         rightTopAnimatorSet.setDuration(mAnimationSpeedInMS);
         rightTopAnimatorSet.setStartDelay(mAnimationSpeedInMS * 3);
@@ -410,9 +340,57 @@ public class CustomView extends View {
         mAnimatorSet.play(rightTopAnimatorSet);
         mAnimatorSet.start();
 
+        mAnimatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                //startReverseAnimation();
+                mUnwrappedBlink.start();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+
+        mUnwrappedBlink.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                startReverseAnimation();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
     }
 
     private void startReverseAnimation(){
+
+        mUnwrappedBlink = ObjectAnimator.ofFloat(CustomView.this, "alpha", 0f, 6f);
+        mUnwrappedBlink.setDuration(500);
+        mUnwrappedBlink.setRepeatCount(2);
 
         //left top
         ObjectAnimator leftTopVtxAnimation = ObjectAnimator.ofInt(mLeftTopVtx,"top",mHeight/2, 0);
@@ -495,6 +473,51 @@ public class CustomView extends View {
         mAnimatorSet.play(rightBottomAnimatorSet);
         mAnimatorSet.play(rightTopAnimatorSet);
         mAnimatorSet.start();
+
+        mAnimatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                //setAnimator();
+                mUnwrappedBlink.start();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+
+        mUnwrappedBlink.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                startAnimations();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
     }
 
     private void drawBitmap(Canvas canvas){
@@ -585,24 +608,24 @@ public class CustomView extends View {
         }
     }
 
-    //reverse animation
-    private class ReverseInterpolator implements Interpolator {
-        private final Interpolator delegate;
-
-        ReverseInterpolator(Interpolator delegate){
-            this.delegate = delegate;
-        }
-
-        ReverseInterpolator(){
-            this(new LinearInterpolator());
-        }
-
-        @Override
-        public float getInterpolation(float paramFloat){
-            return Math.abs(paramFloat - 1f);
-            //return 1 - delegate.getInterpolation(paramFloat);
-        }
-    }
+//    //reverse animation
+//    private class ReverseInterpolator implements Interpolator {
+//        private final Interpolator delegate;
+//
+//        ReverseInterpolator(Interpolator delegate){
+//            this.delegate = delegate;
+//        }
+//
+//        ReverseInterpolator(){
+//            this(new LinearInterpolator());
+//        }
+//
+//        @Override
+//        public float getInterpolation(float paramFloat){
+//            return Math.abs(paramFloat - 1f);
+//            //return 1 - delegate.getInterpolation(paramFloat);
+//        }
+//    }
 
     private int getBitmapDrawable(){
         return mBitmapPicture;
