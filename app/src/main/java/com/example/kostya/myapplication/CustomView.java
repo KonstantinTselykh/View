@@ -266,7 +266,7 @@ public class CustomView extends View {
 
     private void startAnimations(){
         setAnimator();
-        mAnimatorSet.start();
+        //mAnimatorSet.start();
         //mAnimatorSet.setInterpolator(new ReverseInterpolator());
 
         mWrappedBlink = ObjectAnimator.ofInt(CustomView.this, "mPaintAlpha", 0 ,255);
@@ -286,6 +286,7 @@ public class CustomView extends View {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mWrappedBlink.start();
+                //startReverseAnimation();
             }
 
             @Override
@@ -311,7 +312,7 @@ public class CustomView extends View {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mAnimationCount++;
-                mAnimatorSet.start();
+                startReverseAnimation();
                 if(mAnimationCount == 2){
                     if(mListener!= null)
                         mListener.onCollapsed();
@@ -407,22 +408,93 @@ public class CustomView extends View {
         mAnimatorSet.play(leftBottomAnimatorSet);
         mAnimatorSet.play(rightBottomAnimatorSet);
         mAnimatorSet.play(rightTopAnimatorSet);
+        mAnimatorSet.start();
 
-        //mAnimatorSet.play(leftTopAnimatorSet).before(leftBottomAnimatorSet);
-        //mAnimatorSet.play(rightTopAnimatorSet);//.before(rightTopAnimatorSet);
-        //mAnimatorSet.play(rightBottomAnimatorSet);//.before(rightTopAnimatorSet);
-        //mAnimatorSet.play(rightTopAnimatorSet);
+    }
 
-//        mAnimatorSet.play(leftTopVtxAnimation);
-//        mAnimatorSet.play(leftBottomVtxAnimation);
-//        mAnimatorSet.play(rightBottomVtxAnimation).with(leftTopToCenter);
-//        mAnimatorSet.play(rightTopVtxAnimation).with(leftBottomToCenter);
-//        mAnimatorSet.play(rightBottomToCenter).with(rightTopToCenter);
+    private void startReverseAnimation(){
 
-//        mAnimatorSet.play(leftTopVtxAnimation).before(leftTopToCenter).with(leftTopToCenter);
-//        mAnimatorSet.play(leftBottomVtxAnimation);
-//        mAnimatorSet.play(rightBottomVtxAnimation);
-//        mAnimatorSet.play(rightTopVtxAnimation);
+        //left top
+        ObjectAnimator leftTopVtxAnimation = ObjectAnimator.ofInt(mLeftTopVtx,"top",mHeight/2, 0);
+        leftTopVtxAnimation.setDuration(mAnimationSpeedInMS);
+        leftTopVtxAnimation.setStartDelay(mAnimationSpeedInMS * 2);
+
+        ObjectAnimator leftTopToCenter = ObjectAnimator.ofInt(mLeftTopVtx,"left",mHeight/2,0);
+        leftTopToCenter.setDuration(mAnimationSpeedInMS);
+        leftTopToCenter.setStartDelay(mAnimationSpeedInMS);
+
+        ObjectAnimator leftTopToRightBottomX = ObjectAnimator.ofInt(mLeftTopVtx, "left", mHeight, mHeight / 2);
+        ObjectAnimator leftTopToRightBottomY = ObjectAnimator.ofInt(mLeftTopVtx, "top", mHeight, mHeight / 2);
+
+        AnimatorSet leftTopAnimatorSet = new AnimatorSet();
+        leftTopAnimatorSet.play(leftTopToRightBottomX).with(leftTopToRightBottomY);
+        leftTopAnimatorSet.play(leftTopToCenter);
+        leftTopAnimatorSet.play(leftTopVtxAnimation);
+        leftTopAnimatorSet.setDuration(mAnimationSpeedInMS);
+
+        //left bottom
+        ObjectAnimator leftBottomVtxAnimation = ObjectAnimator.ofInt(mLeftBottomVtx,"left",mHeight/2, 0);
+        leftBottomVtxAnimation.setDuration(mAnimationSpeedInMS);
+        leftBottomVtxAnimation.setStartDelay(mAnimationSpeedInMS * 2);
+
+        ObjectAnimator leftBottomToCenter = ObjectAnimator.ofInt(mLeftBottomVtx, "top", mHeight/2, mWidth);
+        leftBottomToCenter.setDuration(mAnimationSpeedInMS);
+        leftBottomToCenter.setStartDelay(mAnimationSpeedInMS);
+
+        ObjectAnimator leftBottomToRightTopX = ObjectAnimator.ofInt(mLeftBottomVtx, "left", mWidth, mHeight / 2);
+        ObjectAnimator leftBottomToRightTopY = ObjectAnimator.ofInt(mLeftBottomVtx, "top",0 ,mHeight/2);
+
+        AnimatorSet leftBottomAnimatorSet = new AnimatorSet();
+        leftBottomAnimatorSet.play(leftBottomToRightTopX).with(leftBottomToRightTopY);
+        leftBottomAnimatorSet.play(leftBottomToCenter);
+        leftBottomAnimatorSet.play(leftBottomVtxAnimation);
+        leftBottomAnimatorSet.setDuration(mAnimationSpeedInMS);
+        leftBottomAnimatorSet.setStartDelay(mAnimationSpeedInMS);
+
+        //right bottom
+        ObjectAnimator rightBottomVtxAnimation = ObjectAnimator.ofInt(mRightBottomVtx,"top",mHeight/2, mWidth);
+        rightBottomVtxAnimation.setDuration(mAnimationSpeedInMS);
+        rightBottomVtxAnimation.setStartDelay(mAnimationSpeedInMS * 2);
+
+        ObjectAnimator rightBottomToCenter = ObjectAnimator.ofInt(mRightBottomVtx,"left", mHeight/2, mWidth);
+        rightBottomToCenter.setDuration(mAnimationSpeedInMS);
+        rightBottomToCenter.setStartDelay(mAnimationSpeedInMS);
+
+        ObjectAnimator rightBottomToLeftTopX = ObjectAnimator.ofInt(mRightBottomVtx, "left", 0 , mWidth / 2 );
+        ObjectAnimator rightBottomToLeftTopY = ObjectAnimator.ofInt(mRightBottomVtx, "top",  0, mWidth / 2);
+
+        AnimatorSet rightBottomAnimatorSet = new AnimatorSet();
+        rightBottomAnimatorSet.play(rightBottomToLeftTopX).with(rightBottomToLeftTopY);
+        rightBottomAnimatorSet.play(rightBottomToCenter);
+        rightBottomAnimatorSet.play(rightBottomVtxAnimation);
+        rightBottomAnimatorSet.setDuration(mAnimationSpeedInMS);
+        rightBottomAnimatorSet.setStartDelay(mAnimationSpeedInMS  * 2);
+
+        //right top
+        ObjectAnimator rightTopVtxAnimation = ObjectAnimator.ofInt(mRightTopVtx,"left",mHeight/2, mWidth);
+        rightTopVtxAnimation.setDuration(mAnimationSpeedInMS);
+        rightTopVtxAnimation.setStartDelay(mAnimationSpeedInMS * 2);
+
+        ObjectAnimator rightTopToCenter = ObjectAnimator.ofInt(mRightTopVtx,"top",mHeight/2, 0);
+        rightTopToCenter.setDuration(mAnimationSpeedInMS);
+        rightTopToCenter.setStartDelay(mAnimationSpeedInMS);
+
+        ObjectAnimator rightTopToLeftBottomX = ObjectAnimator.ofInt(mRightTopVtx, "left", 0, mHeight / 2);
+        ObjectAnimator rightTopToLeftBottomY = ObjectAnimator.ofInt(mRightTopVtx, "top",mWidth, mHeight / 2);
+
+        AnimatorSet rightTopAnimatorSet = new AnimatorSet();
+        rightTopAnimatorSet.play(rightTopToLeftBottomX).with(rightTopToLeftBottomY);
+        rightTopAnimatorSet.play(rightTopToCenter);
+        rightTopAnimatorSet.play(rightTopVtxAnimation);
+        rightTopAnimatorSet.setDuration(mAnimationSpeedInMS);
+        rightTopAnimatorSet.setStartDelay(mAnimationSpeedInMS * 3);
+
+        mAnimatorSet = new AnimatorSet();
+        mAnimatorSet.play(leftTopAnimatorSet);
+        mAnimatorSet.play(leftBottomAnimatorSet);
+        mAnimatorSet.play(rightBottomAnimatorSet);
+        mAnimatorSet.play(rightTopAnimatorSet);
+        mAnimatorSet.start();
     }
 
     private void drawBitmap(Canvas canvas){
