@@ -15,6 +15,7 @@ public class MainActivity extends AppCompatActivity {
 
         final CustomView customView = (CustomView)findViewById(R.id.custom_view1);
         customView.setBitmapDrawable(R.drawable.ic_cloud_circle_black_24dp);
+        customView.setBitmapColor(Color.BLUE);
         customView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
