@@ -608,25 +608,6 @@ public class CustomView extends View {
         }
     }
 
-//    //reverse animation
-//    private class ReverseInterpolator implements Interpolator {
-//        private final Interpolator delegate;
-//
-//        ReverseInterpolator(Interpolator delegate){
-//            this.delegate = delegate;
-//        }
-//
-//        ReverseInterpolator(){
-//            this(new LinearInterpolator());
-//        }
-//
-//        @Override
-//        public float getInterpolation(float paramFloat){
-//            return Math.abs(paramFloat - 1f);
-//            //return 1 - delegate.getInterpolation(paramFloat);
-//        }
-//    }
-
     private int getBitmapDrawable(){
         return mBitmapPicture;
     }
